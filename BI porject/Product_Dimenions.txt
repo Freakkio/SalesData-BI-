@@ -1,0 +1,9 @@
+ProductKey,ProductName,Category,SubCategory,Brand,UnitCost
+101,Laptop Pro 15,Electronics,Computers,TechCorp,500.00
+102,Smartphone X,Electronics,Mobile,PhoneCo,300.00
+103,Office Chair Deluxe,Furniture,Seating,ComfortInc,150.00
+104,LED Desk Lamp,Furniture,Lighting,BrightCo,75.00
+105,Wireless Headphones,Electronics,Audio,SoundTech,120.00
+106,Standing Desk,Furniture,Desks,ErgoCorp,250.00
+107,Tablet Pro,Electronics,Tablets,TechCorp,400.00
+108,Ergonomic Mouse,Electronics,Accessories,InputCorp,50.00

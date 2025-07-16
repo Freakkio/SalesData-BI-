@@ -1,0 +1,5 @@
+RegionKey,RegionName,Country,State,City,SalesManager
+1,North,USA,New York,New York,John Smith
+2,South,USA,Texas,Houston,Jane Doe
+3,East,USA,Florida,Miami,Bob Johnson
+4,West,USA,California,Los Angeles,Alice Brown
