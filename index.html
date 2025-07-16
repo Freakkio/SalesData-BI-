@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLAP Operations Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .operations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .operation-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .operation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .rollup { border-left-color: #e74c3c; }
+        .drilldown { border-left-color: #3498db; }
+        .slice { border-left-color: #2ecc71; }
+        .dice { border-left-color: #f39c12; }
+        
+        .operation-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .operation-description {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .example-box {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+        
+        .demo-section {
+            background: #f8f9fa;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        .demo-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background: #34495e;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .filter-group select {
+            padding: 8px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .active-operation {
+            background: #e8f5e8 !important;
+            border-left-color: #27ae60 !important;
+        }
+        
+        .button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+        }
+        
+        .hierarchy-level {
+            margin-left: 20px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 OLAP Operations Interactive Demo</h1>
+            <p>Online Analytical Processing - Analyze data from multiple dimensions</p>
+        </div>
+        
+        <div class="operations-grid">
+            <div class="operation-card rollup" onclick="demonstrateRollup()">
+                <div class="operation-title">📈 ROLL-UP</div>
+                <div class="operation-description">
+                    <strong>Summary Level:</strong> Goes from detailed to summary data
+                </div>
+                <div class="example-box">
+                    Daily Sales → Monthly → Quarterly → Yearly
+                </div>
+            </div>
+            
+            <div class="operation-card drilldown" onclick="demonstrateDrilldown()">
+                <div class="operation-title">🔍 DRILL-DOWN</div>
+                <div class="operation-description">
+                    <strong>Detail Level:</strong> Goes from summary to detailed data
+                </div>
+                <div class="example-box">
+                    Total Sales → By Region → By City → By Store
+                </div>
+            </div>
+            
+            <div class="operation-card slice" onclick="demonstrateSlice()">
+                <div class="operation-title">🔪 SLICE</div>
+                <div class="operation-description">
+                    <strong>Filter One Dimension:</strong> Show data for one specific criteria
+                </div>
+                <div class="example-box">
+                    Show only "Electronics" category sales
+                </div>
+            </div>
+            
+            <div class="operation-card dice" onclick="demonstrateDice()">
+                <div class="operation-title">🎲 DICE</div>
+                <div class="operation-description">
+                    <strong>Filter Multiple Dimensions:</strong> Apply multiple filters simultaneously
+                </div>
+                <div class="example-box">
+                    Electronics + North Region + Q1 2024
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">📊 Interactive Data Analysis</h2>
+            
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select id="categoryFilter" onchange="applyFilters()">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Books">Books</option>
+                        <option value="Home">Home & Garden</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Region:</label>
+                    <select id="regionFilter" onchange="applyFilters()">
+                        <option value="">All Regions</option>
+                        <option value="North">North</option>
+                        <option value="South">South</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Quarter:</label>
+                    <select id="quarterFilter" onchange="applyFilters()">
+                        <option value="">All Quarters</option>
+                        <option value="Q1">Q1 2024</option>
+                        <option value="Q2">Q2 2024</option>
+                        <option value="Q3">Q3 2024</option>
+                        <option value="Q4">Q4 2024</option>
+                    </select>
+                </div>
+                
+                <button class="button" onclick="resetFilters()">Reset Filters</button>
+            </div>
+            
+            <div id="currentOperation" style="margin: 20px 0; padding: 15px; background: #e8f4f8; border-radius: 8px; display: none;">
+                <strong>Current Operation:</strong> <span id="operationName"></span>
+                <div id="operationDetail" style="margin-top: 10px; color: #7f8c8d;"></div>
+            </div>
+            
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Region</th>
+                        <th>Quarter</th>
+                        <th>Sales Amount</th>
+                        <th>Profit</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Sample data
+        const salesData = [
+            { category: 'Electronics', region: 'North', quarter: 'Q1', sales: 125000, profit: 25000 },
+            { category: 'Electronics', region: 'North', quarter: 'Q2', sales: 135000, profit: 27000 },
+            { category: 'Electronics', region: 'South', quarter: 'Q1', sales: 98000, profit: 19600 },
+            { category: 'Electronics', region: 'South', quarter: 'Q2', sales: 112000, profit: 22400 },
+            { category: 'Clothing', region: 'North', quarter: 'Q1', sales: 85000, profit: 17000 },
+            { category: 'Clothing', region: 'North', quarter: 'Q2', sales: 92000, profit: 18400 },
+            { category: 'Clothing', region: 'East', quarter: 'Q1', sales: 78000, profit: 15600 },
+            { category: 'Clothing', region: 'East', quarter: 'Q2', sales: 84000, profit: 16800 },
+            { category: 'Books', region: 'West', quarter: 'Q1', sales: 45000, profit: 9000 },
+            { category: 'Books', region: 'West', quarter: 'Q2', sales: 52000, profit: 10400 },
+            { category: 'Home', region: 'South', quarter: 'Q1', sales: 67000, profit: 13400 },
+            { category: 'Home', region: 'South', quarter: 'Q2', sales: 73000, profit: 14600 }
+        ];
+        
+        let currentData = [...salesData];
+        let currentOperation = null;
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+        
+        function populateTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.category}</td>
+                    <td>${row.region}</td>
+                    <td>${row.quarter}</td>
+                    <td>${formatCurrency(row.sales)}</td>
+                    <td>${formatCurrency(row.profit)}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+        
+        function demonstrateRollup() {
+            setActiveOperation('rollup');
+            document.getElementById('operationName').textContent = 'ROLL-UP';
+            document.getElementById('operationDetail').textContent = 'Showing quarterly summary instead of detailed records';
+            
+            // Group by quarter only
+            const rollupData = {};
+            salesData.forEach(row => {
+                const key = row.quarter;
+                if (!rollupData[key]) {
+                    rollupData[key] = { category: 'All Categories', region: 'All Regions', quarter: key, sales: 0, profit: 0 };
+                }
+                rollupData[key].sales += row.sales;
+                rollupData[key].profit += row.profit;
+            });
+            
+            currentData = Object.values(rollupData);
+            populateTable(currentData);
+        }
+        
+        function demonstrateDrilldown() {
+            setActiveOperation('drilldown');
+            document.getElementById('operationName').textContent = 'DRILL-DOWN';
+            document.getElementById('operationDetail').textContent = 'Showing detailed breakdown by all dimensions';
+            
+            currentData = [...salesData];
+            populateTable(currentData);
+        }
+        
+        function demonstrateSlice() {
+            setActiveOperation('slice');
+            document.getElementById('operationName').textContent = 'SLICE';
+            document.getElementById('operationDetail').textContent = 'Filtering by Electronics category only';
+            
+            document.getElementById('categoryFilter').value = 'Electronics';
+            currentData = salesData.filter(row => row.category === 'Electronics');
+            populateTable(currentData);
+        }
+        
+        function demonstrateDice() {
+            setActiveOperation('dice');
+            document.getElementById('operationName').textContent = 'DICE';
+            document.getElementById('operationDetail').textContent = 'Multiple filters: Electronics + North Region + Q1';
+            
+            document.getElementById('categoryFilter').value = 'Electronics';
+            document.getElementById('regionFilter').value = 'North';
+            document.getElementById('quarterFilter').value = 'Q1';
+            
+            currentData = salesData.filter(row => 
+                row.category === 'Electronics' && 
+                row.region === 'North' && 
+                row.quarter === 'Q1'
+            );
+            populateTable(currentData);
+        }
+        
+        function setActiveOperation(operation) {
+            // Remove active class from all cards
+            document.querySelectorAll('.operation-card').forEach(card => {
+                card.classList.remove('active-operation');
+            });
+            
+            // Add active class to current operation
+            document.querySelector(`.${operation}`).classList.add('active-operation');
+            
+            // Show operation info
+            document.getElementById('currentOperation').style.display = 'block';
+            currentOperation = operation;
+        }
+        
+        function applyFilters() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const regionFilter = document.getElementById('regionFilter').value;
+            const quarterFilter = document.getElementById('quarterFilter').value;
+            
+            currentData = salesData.filter(row => {
+                return (!categoryFilter || row.category === categoryFilter) &&
+                       (!regionFilter || row.region === regionFilter) &&
+                       (!quarterFilter || row.quarter === quarterFilter);
+            });
+            
+            populateTable(currentData);
+            
+            // Update operation info
+            if (categoryFilter || regionFilter || quarterFilter) {
+                const filters = [];
+                if (categoryFilter) filters.push(`Category: ${categoryFilter}`);
+                if (regionFilter) filters.push(`Region: ${regionFilter}`);
+                if (quarterFilter) filters.push(`Quarter: ${quarterFilter}`);
+                
+                document.getElementById('operationName').textContent = filters.length > 1 ? 'DICE' : 'SLICE';
+                document.getElementById('operationDetail').textContent = `Active filters: ${filters.join(', ')}`;
+                document.getElementById('currentOperation').style.display = 'block';
+            } else {
+                document.getElementById('currentOperation').style.display = 'none';
+            }
+        }
+        
+        function resetFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('regionFilter').value = '';
+            document.getElementById('quarterFilter').value = '';
+            document.getElementById('currentOperation').style.display = 'none';
+            
+            // Remove active class from all cards
+            document.querySelectorAll('.operation-card').forEach(card => {
+                card.classList.remove('active-operation');
+            });
+            
+            currentData = [...salesData];
+            populateTable(currentData);
+        }
+        
+        // Initialize table on page load
+        populateTable(salesData);
+    </script>
+</body>
+</html>
